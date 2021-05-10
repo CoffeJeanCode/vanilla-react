@@ -2,14 +2,16 @@ export const render = (element, container) => {
   if (typeof element === "string" || element instanceof Element)
     return container.append(element);
 
-  const reRender = (newChild) => {
-    container.innerHTML = "";
-    container.appendChild(newChild);
-  };
+  let childrenElement = element.build();
+
+  function reRender(newChild) {
+    container.replaceChild(newChild, childrenElement);
+    childrenElement = newChild;
+  }
 
   element.update = reRender;
 
-  let childrenElement = element.build();
+  childrenElement = element.build();
 
   container.append(childrenElement);
   element.componentDidMount(childrenElement);
@@ -67,44 +69,24 @@ export class Component {
   }
 
   setState(newState) {
-    for (const key in newState) {
-      if (key in this.state) {
-        this.state[key] = newState[key];
-      }
-    }
-    this.updater();
+    this.state = {
+      ...this.state,
+      ...newState,
+    };
+    this.#updater();
   }
 
   update() {}
-  updater() {
+  #updater() {
     this.update(this.render());
   }
 
   componentDidMount() {}
   componentDidUpdate() {}
   componentWillUnmount() {}
+  render() {}
 
   build() {
     return this.render();
   }
 }
-
-const elements = ["h1", "div", "button"];
-export const styled = {};
-
-const buildStyles = (styles, dynamicStyles, props) => {
-  let style = styles.slice();
-
-  dynamicStyles.forEach((value, index) => {
-    style[index] += value(props);
-  });
-
-  return style.join("");
-};
-
-elements.forEach((tag) => {
-  styled[tag] = (rawStyles, ...dynamicStyles) => (props, content) => {
-    const styles = buildStyles(rawStyles, dynamicStyles, props);
-    return createElement(tag, { ...props, style: styles }, content);
-  };
-});
