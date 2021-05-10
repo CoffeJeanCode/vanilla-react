@@ -1,70 +1,72 @@
-import { createElement, render, createStore } from "./lib/react";
+import { Component, createElement, render, styled } from "./lib/react";
 import "./style.css";
-import { withStore } from "./withStore";
 
-const store = createStore({
-  counter: 0,
-  imageURL: "",
-});
+class Title extends Component {
+  constructor(props) {
+    super(props);
+  }
 
-const Counter = withStore(({ store }) => {
-  return createElement(
-    "div",
-    null,
-    createElement(
-      "button",
-      {
-        onclick: () =>
-          store.setState({
-            ...store.getState(),
-            counter: store.getState().counter + 1,
-          }),
-      },
-      "Increment"
-    ),
-    createElement(
-      "button",
-      {
-        onclick: () =>
-          store.setState({
-            ...store.getState(),
-            counter: store.getState().counter - 1,
-          }),
-      },
-      "Decrement"
-    ),
-    createElement("h1", null, store.getState().counter)
-  );
-}, store);
+  render() {
+    return createElement(this.props.type, {}, String(this.props.text));
+  }
+}
 
-const InputExample = () =>
-  createElement(
-    "div",
-    null,
-    createElement(
-      "form",
-      {
-        onsubmit: (evt) => {
-          evt.preventDefault();
-          alert();
-        },
-      },
-      createElement("input", {
-        placeholder: "Write an url of image...",
-        onchange: (evt) =>
-          store.setState({ ...store.getState(), imageURL: evt.target.value }),
-      }),
-      createElement("button", {}, "view")
-    ),
-    createElement("img", { src: store.getState().imageURL, alt: "image" })
-  );
+const Button = styled.button`
+  border: none;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  font-size: 1rem;
+  background: ${({ background }) => background};
+  color: ${({ fontColor }) => fontColor};
+`;
 
-const App = () => createElement("div", null, Counter(), InputExample());
+class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      counter: 0,
+    };
+  }
 
-const app = document.querySelector("#app");
+  render() {
+    return createElement("div", {
+      children: [
+        new Title({
+          type: "h2",
+          text: this.state.counter,
+        }),
+        Button(
+          {
+            background: "deeppink",
+            fontColor: "white",
+            onClick: () => {
+              this.setState({
+                counter: this.state.counter + 1,
+              });
+            },
+          },
+          "Increment"
+        ),
+        Button(
+          {
+            background: "deepskyblue",
+            fontColor: "white",
+            onClick: () => {
+              this.setState({
+                counter: this.state.counter - 1,
+              });
+            },
+          },
+          "Decrement"
+        ),
+      ],
+    });
+  }
+}
 
-store.suscribe(() => {
-  render(App(), app);
-});
-
-render(App(), app);
+render(
+  new App({
+    title: "HOLA MUNDO",
+  }),
+  app
+);
